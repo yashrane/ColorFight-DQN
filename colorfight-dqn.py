@@ -1,6 +1,16 @@
 import colorfight
 import numpy as np
 import torch
+import torch.nn as nn
+
+
+
+#calculates the score of a given state
+def calculateScore(state):
+	score = torch.mul(state[:,:,2],state[:,:,0])
+	return score.sum()
+	
+
 
 #Uses a game object g to generate a tensor representing
 #the current state of the board
@@ -11,8 +21,8 @@ isEnemy
 isGolden
 adjusted time to take(if already owned, set to 0?)
 timeToFinish(if not being taken, set to 0?)
-
 '''
+
 def getStateTensor(g):
 	tensor = np.empty(shape = (g.width, g.height, 5), dtype=np.float64)
 	for x in range(g.width):
@@ -20,7 +30,7 @@ def getStateTensor(g):
 			c = g.GetCell(x,y)
 			tensor[x,y,0] = (int)(c.owner == g.uid) 					#isPlayer
 			tensor[x,y,1] = (int)(c.owner != g.uid and c.owner != 0)	#isEnemy
-			tensor[x,y,2] = (int)(c.cellType == 'gold')					#isGolden
+			tensor[x,y,2] = (int)(c.cellType == 'gold')*9+1				#score
 			tensor[x,y,3] = calculateTimeToTake(g,x,y)					#takeTime
 			tensor[x,y,4] = calculateTimeToFinish(g,c)					#finishTime
 	return torch.from_numpy(tensor)
@@ -64,7 +74,9 @@ if __name__ == '__main__':
 		# Put you logic in a while True loop so it will run forever until you 
 		# manually stop the game
 		while True:
-			print(getStateTensor(g))
+			state = getStateTensor(g)
+			print(calculateScore(state))
+			
 			g.Refresh()
 	else:
 		print("Failed to join the game!")
