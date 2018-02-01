@@ -4,7 +4,6 @@
 """
 Simulate colorfight
 There are two things that still have to be done:
--Finish the reset function
 -figure out what the action and observation spaces are
 """
 
@@ -19,6 +18,8 @@ from gym import spaces
 import colorfight
 import numpy as np
 import torch
+import json
+import requests
 
 
 def get_chance(x):
@@ -129,11 +130,6 @@ class ColorfightEnv(gym.Env):
 		return score.sum()
 
 		
-	#TODO
-	'''
-	this function needs to be able to reset the server in order to reset the game, 
-	so i havent been able to write it yet
-	'''
     def _reset(self):
         """
         Reset the state of the environment and returns an initial observation.
@@ -142,10 +138,10 @@ class ColorfightEnv(gym.Env):
         -------
         observation (object): the initial observation of the space.
         """
-        self.curr_episode += 1
-        self.action_episode_memory.append([])
-        self.is_banana_sold = False
-        self.price = 1.00
+		
+		headers = {'content-type': 'application/json'}
+		r = requests.post(hostUrl + 'startgame', data=json.dumps({"admin_password":'', "last_time":0, "ai_join_time":0, "ai_only":True, "soft":False}), headers = headers)
+		
         return self._get_state()
 
     def _render(self, mode='human', close=False):
