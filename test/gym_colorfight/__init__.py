@@ -5,5 +5,5 @@ logger = logging.getLogger(__name__)
 
 register(
     id='Colorfight-v0',
-    entry_point='gym_colorfight.envs:ColorFightEnv',
+    entry_point='gym_colorfight.envs:ColorfightEnv',
 )
