@@ -1,7 +1,20 @@
 # You need to import colorfight for all the APIs
 import colorfight
 import random
+import math
 directions = [(0,1), (0,-1), (1, 0), (-1,0)]
+surround = [(0,1), (0,-1), (1, 0), (-1,0), (1,1), (1,-1), (-1, 1), (-1,-1)]
+location_importance = []
+for i in range(30):
+    location_importance.append([])
+    for j in range(30):
+        location_importance[i].append(0)
+for i in range(15):
+    for j in range(15):
+        location_importance[i+15][j+15] = round(math.sqrt((i+1)**2 + (j+1)**2))
+        location_importance[14-i][j+15] = location_importance[i+15][j+15]
+        location_importance[i+15][14-j] = location_importance[i+15][j+15]
+        location_importance[14-i][14-j] = location_importance[i+15][j+15]
 
 def valid(g,x,y):
     if g.GetCell(x,y).isTaking:
@@ -32,8 +45,9 @@ def calcExpScore(g,x,y):
     if cell.owner != 0:
         owner = [user for user in g.users if user.id == cell.owner]
         owner = owner[0]
+        score = score*location_importance[x][y]
         score = score + score*owner.cellNum/900
-    E_score = score/time
+    E_score = score/(time**2)
     return E_score
 
 def find_max(cells):
@@ -52,7 +66,7 @@ if __name__ == '__main__':
     # stop your AI and continue from the last time you quit. 
     # If there's a token and the token is valid, JoinGame() will continue. If
     # not, you will join as a new player.
-    if g.JoinGame('Q stands for Q'):
+    if g.JoinGame('sqedge1'):
         # Put you logic in a while True loop so it will run forever until you 
         # manually stop the game
         while True:
