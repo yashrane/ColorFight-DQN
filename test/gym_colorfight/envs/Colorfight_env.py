@@ -139,7 +139,7 @@ class ColorfightEnv(gym.Env):
 		headers = {'content-type': 'application/json'}
 		r = requests.post(hostUrl + 'startgame', data=json.dumps({"admin_password":'', "last_time":0, "ai_join_time":0, "ai_only":True, "soft":False}), headers = headers)
 		
-		self.game = colorfight.Game()
+		self.game = Game()
 		self.game.JoinGame('MyAI2')
 		
 		return self.get_state()
@@ -165,7 +165,7 @@ class ColorfightEnv(gym.Env):
 		
 	#calculates the adjusted time it takes to capture a cell, 
 	#returning the max float if we already own the cell
-	def calculateTimeToTake(x,y):
+	def calculateTimeToTake(self,x,y):
 		g = self.game
 		cell = g.GetCell(x,y)
 		if(cell.owner == g.uid):#if we already own the cell
@@ -181,7 +181,7 @@ class ColorfightEnv(gym.Env):
 
 	#Calculate the time left until a cell will be captured, 
 	#returning max float if the cell is not being captured right now
-	def calculateTimeToFinish(cell):
+	def calculateTimeToFinish(self,cell):
 		g = self.game
 		finish_time = cell.finishTime - g.currTime
 		if(finish_time < 0):
