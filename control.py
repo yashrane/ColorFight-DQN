@@ -7,6 +7,9 @@ import json
 import requests
 import time
 
+
+hostUrl   = 'https://colorfight-dqn.herokuapp.com/'
+
 #command line with anything to start from scratch
 #python3 control.py to start with current csv
 if 'start' in sys.argv:
@@ -42,6 +45,7 @@ def run():
 		status = g.AttackCell(x,y)
 		while status[1] != 4:
 			status = g.AttackCell(x,y)
+			print('attacking cells')
 		#gather scores in dictionary
 
 		for x in range(30):
@@ -60,3 +64,5 @@ def run():
 	else:
 		print('something went fucking wrong')
 		run()
+		
+run()

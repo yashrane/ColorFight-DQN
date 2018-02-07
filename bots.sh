@@ -1,3 +1,4 @@
+#!/bin/sh
 python3 bot.py 1 &
 python3 bot.py 2 &
 python3 bot.py 3 &

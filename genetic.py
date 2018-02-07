@@ -11,7 +11,7 @@ def randomize_bots():
 	for i in range(num_bots):
 		bots[str(i+1)] = []
 		for j in range(num_weights):
-			bots[str(i+1)].append() = random.uniform(.1,3.0)
+			bots[str(i+1)].append(random.uniform(.1,3.0))
 	with open("bots.csv", 'w') as file:
 		bots_csv = csv.writer(file)
 		for bot_id in bots.keys():
