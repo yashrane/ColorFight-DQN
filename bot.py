@@ -55,6 +55,27 @@ weights = {
 	"enemy_cells_a": 0
 }
 
+def gold_map(g):
+	gold_weight_setter = []
+	for i in range(0,4):
+		for j in range(0,4):
+			if(i+j < 4 and i+j != 0):
+				gold_weight_setter.append((i,j,4-i-j))
+				gold_weight_setter.append((-i,j,4-i-j))
+				gold_weight_setter.append((i,-j,4-i-j))
+				gold_weight_setter.append((-i,-j,4-i-j))
+	gold_weight_setter.append((0,0,4))
+	map = []
+	for i in range(30):
+		map.append([])
+		for j in range(30):
+			map[i].append(0)
+	for i in range(30):
+		for j in range(30):
+			if g.GetCell(i,j).cellType == 'gold':
+				for thing in gold_weight_setter:
+					map[i-thing[0]][j-thing[1]] += thing[2]
+
 
 if(len(sys.argv) != 2):
 		sys.exit()
