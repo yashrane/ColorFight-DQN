@@ -70,9 +70,10 @@ def get_gold_map(g):
 			map[i].append(0)
 	for i in range(30):
 		for j in range(30):
-			if g.GetCell(i,j) is not None and g.GetCell(i,j).cellType == 'gold':
+			if g.GetCell(i,j).cellType == 'gold':
 				for thing in gold_weight_setter:
-					map[i-thing[0]][j-thing[1]] += thing[2]
+					if g.GetCell(i-thing[0],j-thing[1]) is not None:
+						map[i-thing[0]][j-thing[1]] += thing[2]
 	return map
 #cellwise weights of cells surrounding bases
 base_weight_setter = []
@@ -93,9 +94,10 @@ def get_own_base_map(g):
 	for i in range(30):
 		for j in range(30):
 			cell = g.GetCell(i,j)
-			if cell is not None and cell.isBase and cell.owner == g.uid:
+			if cell.isBase and cell.owner == g.uid:
 				for thing in base_weight_setter:
-					map[i-thing[0]][j-thing[1]] += thing[2]
+					if g.GetCell(i-thing[0],j-thing[1]) is not None:
+						map[i-thing[0]][j-thing[1]] += thing[2]
 	return map
 #enemy bases for attack
 def get_enemy_base_map(g):
@@ -107,10 +109,11 @@ def get_enemy_base_map(g):
 	for i in range(30):
 		for j in range(30):
 			cell = g.GetCell(i,j)
-			if cell is not None and cell.isBase and cell.owner != g.uid:
+			if cell.isBase and cell.owner != g.uid:
 				for thing in base_weight_setter:
-					if not g.getCell(thing[0], thing[1]).isBase:
-						map[i-thing[0]][j-thing[1]] += thing[2]
+					if g.GetCell(i-thing[0],j-thing[1]) is not None:
+						if not g.getCell(thing[0], thing[1]).isBase:
+							map[i-thing[0]][j-thing[1]] += thing[2]
 	return map
 
 directions = [(0,1),(1,0),(-1,0),(0,-1)]
