@@ -75,6 +75,7 @@ def gold_map(g):
 			if g.GetCell(i,j).cellType == 'gold':
 				for thing in gold_weight_setter:
 					map[i-thing[0]][j-thing[1]] += thing[2]
+	return map
 
 
 if(len(sys.argv) != 2):
