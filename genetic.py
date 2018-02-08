@@ -1,5 +1,5 @@
 import csv
-
+import random
 
 num_weights = 11
 num_bots = 10
@@ -15,7 +15,9 @@ def randomize_bots():
 	with open("bots.csv", 'w') as file:
 		bots_csv = csv.writer(file)
 		for bot_id in bots.keys():
-			bots_csv.writerow(bot_id, bots[bot_id])
+			row = [bot_id]
+			row.extend(bots[bot_id])
+			bots_csv.writerow(row)
 
 def breed(scores):
 	#format of scores is dictionary {id: score}

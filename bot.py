@@ -72,7 +72,7 @@ def get_gold_map(g):
 			map[i].append(0)
 	for i in range(30):
 		for j in range(30):
-			if g.GetCell(i,j).cellType == 'gold':
+			if g.GetCell(i,j) is not None and g.GetCell(i,j).cellType == 'gold':
 				for thing in gold_weight_setter:
 					map[i-thing[0]][j-thing[1]] += thing[2]
 	return map
@@ -135,7 +135,9 @@ def enemy_base_surround(g):
 
 
 if(len(sys.argv) != 2):
-		sys.exit()
+	print("Incorrect Number of Arguments.")
+	print("Correct Usage: python3 bot.py [botname]")
+	sys.exit()
 g = colorfight.Game()
 
 gold_map = []
@@ -153,16 +155,15 @@ def run():
 	
 		game_over = False
 		while not game_over:
-			#finds the best cell to attack
-			own_base_map = get_own_base_map(g)
-			enemy_base_map = get_enemy_base_map(g)
-			base_surround = enemy_base_surround(g)
 			
+			#finds the best cell to attack			
 			best_cell = find_best_cell(weights)
 			status = g.AttackCell(best_cell[0], best_cell[1])
 			
 			game_over = (status[1] == 4)
 			g.Refresh()
+	else:
+		print(name + " Could not join game!")
 			
 			
 			
@@ -177,15 +178,14 @@ def get_weights(id):
 				weights["dist_base_t"] = row[1]
 				weights["dist_gold_t"] = row[2]
 				weights["location_t"] = row[3]
-				weights["threshold_t"] = row[4]
-				weights["time_t"] = row[5]
-				weights["dist_gold_a"] = row[6]
-				weights["score_a"] = row[7]
-				weights["time_a"] = row[8]
-				weights["dist_base_a"] = row[9]
-				weights["base_a"] = row[10]
-				weights["location_a"] = row[11]
-				weights["enemy_cells_a"] = row[12]
+				weights["time_t"] = row[4]
+				weights["dist_gold_a"] = row[5]
+				weights["score_a"] = row[6]
+				weights["time_a"] = row[7]
+				weights["dist_base_a"] = row[8]
+				weights["base_a"] = row[9]
+				weights["location_a"] = row[10]
+				weights["enemy_cells_a"] = row[11]
 				return
 	raise LookupError('The bot id could not be found.')
 			
@@ -194,6 +194,12 @@ def get_weights(id):
 #Finds the best cell to attack using the given weights
 def find_best_cell(weights):
 
+	#Creates score maps to make calculating expected score easier
+	own_base_map = get_own_base_map(g)
+	enemy_base_map = get_enemy_base_map(g)
+	base_surround = enemy_base_surround(g)
+
+	#finds all cells that we can attack
 	valid_cells = get_all_valid_cells()
 	for cell in valid_cells:
 		cell.append(expected_value(cell, weights))
@@ -360,8 +366,8 @@ def get_all_valid_cells():
 		for y in range(g.height):
 			# Get a cell
 			c = g.GetCell(x,y)
-			# If the cell I got is mine
-			if c.owner != g.uid and valid(x,y):
+			
+			if valid(x,y):
 				valid_cells.append([x,y])
 	return valid_cells
 	
@@ -379,4 +385,4 @@ def valid(x,y):
 	return False
 	
 	
-#	run()
+run()
