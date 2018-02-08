@@ -86,8 +86,19 @@ def get_weights(id):
 		for row in reader:
 			#if we find the correct id, then return the corresponding weights
 			if(row[0] == id):
-				return row[1]
-				#Needs to change to load the dictionary's weights
+				weights["dist_base_t"] = row[1]
+				weights["dist_gold_t"] = row[2]
+				weights["location_t"] = row[3]
+				weights["threshold_t"] = row[4]
+				weights["time_t"] = row[5]
+				weights["dist_gold_a"] = row[6]
+				weights["score_a"] = row[7]
+				weights["time_a"] = row[8]
+				weights["dist_base_a"] = row[9]
+				weights["base_a"] = row[10]
+				weights["location_a"] = row[11]
+				weights["enemy_cells_a"] = row[12]
+				return
 	raise LookupError('The bot id could not be found.')
 			
 			
