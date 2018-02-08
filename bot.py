@@ -175,8 +175,8 @@ def expected_value(coordinates, weights):
 	
 	inputs['location_a'] = distanceToEdge(x,y)
 	inputs['time_a'] = (calculateTimeToTake(x,y)
-	inputs['dist_gold_a'] = distanceToNearestGold()
-	
+	inputs['dist_gold_a'] = distanceToNearestGold(x,y)
+	inputs['enemy_cells_a'] = cellsOwned(cell)
 	
 	
 #	inputs.append(isGold(cell))
@@ -197,6 +197,11 @@ def expected_value(coordinates, weights):
 		expected_value+=(inputs[key]*weights[key])
 	return expected_value
 	
+	
+def cellsOwned(cell):
+	owner = [user for user in g.users if user.id == cell.owner]
+	owner = owner[0]
+	return owner.cellNum
 	
 #Finds the nearest gold using a breadth first search
 def distanceToNearestGold(x,y):
