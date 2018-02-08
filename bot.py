@@ -196,15 +196,19 @@ def expected_value(coordinates, weights):
 		return -1
 	
 	expected_value = 0	
+	time = 0
 	if cell.owner == g.uid:
 		keys = weights.keys()[:5]#all the threat keys
 	else:
 		keys = weight.keys()[5:]#all the attacking keys
 		
 	for key in keys:
-		expected_value+=(inputs[key]*weights[key])
+		if key[:4] == "time":
+			time = inputs[key]**weights[key]
+		else:
+			expected_value+=(inputs[key]*weights[key])
 			
-	return expected_value
+	return expected_value/time
 	
 	
 def scoreOf(cell):
