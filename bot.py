@@ -54,7 +54,7 @@ weights = {
 	"location_a": 0,
 	"enemy_cells_a": 0
 }
-
+#get the map of weights based on gold cells
 def gold_map(g):
 	gold_weight_setter = []
 	for i in range(0,4):
@@ -76,6 +76,61 @@ def gold_map(g):
 				for thing in gold_weight_setter:
 					map[i-thing[0]][j-thing[1]] += thing[2]
 	return map
+#cellwise weights of cells surrounding bases
+base_weight_setter = []
+for i in range(0,4):
+	for j in range(0,4):
+		if(i+j < 4 and i+j != 0):
+			base_weight_setter.append((i,j,4-i-j))
+			base_weight_setter.append((-i,j,4-i-j))
+			base_weight_setter.append((i,-j,4-i-j))
+			base_weight_setter.append((-i,-j,4-i-j))
+#own bases weights for threat
+def own_base_map(g):
+	map = []
+	for i in range(30):
+		map.append([])
+		for j in range(30):
+			map[i].append(0)
+	for i in range(30):
+		for j in range(30):
+			cell = g.GetCell(i,j)
+			if cell.isBase and cell.owner == g.uid:
+				for thing in base_weight_setter:
+					map[i-thing[0]][j-thing[1]] += thing[2]
+	return map
+#enemy bases for attack
+def enemy_base_map(g):
+	map = []
+	for i in range(30):
+		map.append([])
+		for j in range(30):
+			map[i].append(0)
+	for i in range(30):
+		for j in range(30):
+			cell = g.GetCell(i,j)
+			if cell.isBase and cell.owner != g.uid:
+				for thing in base_weight_setter:
+					map[i-thing[0]][j-thing[1]] += thing[2]
+	return map
+
+directions = [(0,1),(1,0),(-1,0),(0,-1)]
+#returns a dictionary of the scores of the enemy bases NOT a list
+def enemy_base_surround(g):
+	enemy_bases = []
+	for i in range(30):
+		for j in range(30):
+			cell = g.getCell(i,j)
+			if cell.isBase and cell.owner != g.uid:
+				enemy_bases.append((i,j))
+	base_score = {}
+	for base in enemy_bases:
+		count = 0
+		for direction in directions:
+			if g.getCell(base[0],base[1]).owner == g.getCell(base[0]+direction[0], base[1]+direction[1]):
+				count += 1
+		base_score[(i,j)] = count
+	return base_score
 
 
 if(len(sys.argv) != 2):
