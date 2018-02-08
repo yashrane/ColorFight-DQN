@@ -6,18 +6,55 @@ import random
 '''
 TODO: 
 * finish expected_value()
-
-* Create the following weights:
-	-distance to base surroundings
-	-distance to gold
-	-isGold
-	-time to Take
-	-distance to own base
-	-number of cells the enemy owns
-	-Time left
-	-distance to edge
-	+anything else that you can think of
+* Change loading so it goes into the dictionary
 '''
+
+'''
+----------------------------------------------------------------
+	Explanation of Weights:
+	dist_base_t: threat that a cell feels based on enemy distance to own base
+	dist_gold_t: threat that a cell feels based on enemy distance to own gold
+	location_t: threat that a cell feels based on location and distance to enemy
+	threshold_t: at what threat level should a cell be defended
+	time_t: time weight for threat
+	dist_gold_a: value of cell based on distance to gold
+	score_a: value of a cell
+	time_a: time weight for attacking
+	dist_base_a: value of cells surrounding enemy base based on distance
+	base_a: value of enemy base based on number of surrounding enemy cells
+	location_a: value of location importance of a cell
+	enemy_cells_a: value of attacking an enemy based on number of cells they own
+----------------------------------------------------------------
+	formula for calculating "score" of attacking cell
+
+	a is a value that has an a after it (not including time)
+	t stands for time
+
+	sum(w_a*f(a))/(time**w_t_a)
+----------------------------------------------------------------
+	formula for calculating "threat" of owned cell
+
+	for th is a value with t after it (not including time)
+	t stands for time
+
+	sum(w_th*f(th))/(time**w_t_th)
+----------------------------------------------------------------
+'''
+weights = {
+	"dist_base_t": 0,
+	"dist_gold_t": 0,
+	"location_t": 0,
+	"threshold_t": 0,
+	"time_t": 0,
+	"dist_gold_a": 0,
+	"score_a": 0,
+	"time_a": 0,
+	"dist_base_a": 0,
+	"base_a": 0,
+	"location_a": 0,
+	"enemy_cells_a": 0
+}
+
 
 if(len(sys.argv) != 2):
 		sys.exit()
@@ -50,6 +87,7 @@ def get_weights(id):
 			#if we find the correct id, then return the corresponding weights
 			if(row[0] == id):
 				return row[1]
+				#Needs to change to load the dictionary's weights
 	raise LookupError('The bot id could not be found.')
 			
 			
