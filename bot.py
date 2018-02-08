@@ -2,6 +2,7 @@ import sys
 import csv
 import colorfight
 import random
+import queue
 
 '''
 TODO: 
@@ -16,6 +17,7 @@ TODO:
 	location_t: threat that a cell feels based on location and distance to enemy
 	threshold_t: at what threat level should a cell be defended
 	time_t: time weight for threat
+	
 	dist_gold_a: value of cell based on distance to gold
 	score_a: value of a cell
 	time_a: time weight for attacking
@@ -23,6 +25,7 @@ TODO:
 	base_a: value of enemy base based on number of surrounding enemy cells
 	location_a: value of location importance of a cell
 	enemy_cells_a: value of attacking an enemy based on number of cells they own
+	
 ----------------------------------------------------------------
 	formula for calculating "score" of attacking cell
 
@@ -65,7 +68,7 @@ def run():
 	
 	weights = get_weights(name)
 	print(name + " joined")
-	if g.JoinGame(name):#this line throws an exception for whatever reason
+	if g.JoinGame(name):
 		game_over = False
 		while not game_over:
 			#finds the best cell to attack
@@ -133,28 +136,67 @@ def expected_value(coordinates, weights):
 	y = coordinates[1]
 	cell = g.GetCell(x,y)
 	
-	inputs = []
-	inputs.append(isGold(cell))
-	inputs.append(calculateTimeToTake(x,y))
-	inputs.append(distanceToEdge(x,y))
-	inputs.append(timeLeft())
+	inputs = {
+		"dist_base_t": 0,
+		"dist_gold_t": 0,
+		"location_t": 0,
+		"threshold_t": 0,
+		"time_t": 0,
+		"dist_gold_a": 0,
+		"score_a": 0,
+		"time_a": 0,
+		"dist_base_a": 0,
+		"base_a": 0,
+		"location_a": 0,
+		"enemy_cells_a": 0
+	}
+	
+	inputs['location_a'] = distanceToEdge(x,y)
+	inputs['time_a'] = (calculateTimeToTake(x,y)
+	inputs['dist_gold_a'] = distanceToNearestGold()
+	
+	
+	
+#	inputs.append(isGold(cell))
+#	inputs.append(timeLeft())
 	
 	
 	#add more inputs here
 	
 	
-	if len(inputs) is not len(weights):
+	if inputs.keys() != weights.keys():
 		print("Input length(" + str(len(inputs)) + ") does not match weights length(" + str(len(weights)))
 		return -1
 		
+		
+	#TODO: modify this to match the new formulas (use threats if cell is owned by you, attack if owned by someone else)
 	expected_value = 0
-	for i in range(len(inputs)):
-		expected_value+=(inputs[i]*weights[i])
+	for key in weights.keys():
+		expected_value+=(inputs[key]*weights[key])
 	return expected_value
+	
+	
+#Finds the nearest gold using a breadth first search
+def distanceToNearestGold(x,y):
+	cells = queue.Queue()
+	cells.put(g.GetCell(x,y))
+	while(not cells.empty()):
+		cell = cells.get()
+		if(isGold(cell)):
+			return distance(x,y,cell.x, cell.y)
+		else:
+			neighbors = (g.GetCell(x+1,y),g.GetCell(x,y+1),g.GetCell(x-1,y),g.GetCell(x,y-1))
+			for n in neighbors:
+				if(n is not None):
+					cells.put(n)
+	return -1
 	
 	
 def timeLeft():
 	return g.endTime - g.currTime
+	
+def distance(x1, y1, x2, y2):
+	return round(math.sqrt((x1-x2)**2 + (y1-y2)**2))
 	
 def distanceToEdge(x,y):
 	if(x > g.width/2):
