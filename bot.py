@@ -57,7 +57,7 @@ weights = {
 	"enemy_cells_a": 0
 }
 #get the map of weights based on gold cells
-def gold_map(g):
+def get_gold_map(g):
 	gold_weight_setter = []
 	for i in range(0,4):
 		for j in range(0,4):
@@ -88,7 +88,7 @@ for i in range(0,4):
 			base_weight_setter.append((i,-j,4-i-j))
 			base_weight_setter.append((-i,-j,4-i-j))
 #own bases weights for threat
-def own_base_map(g):
+def get_own_base_map(g):
 	map = []
 	for i in range(30):
 		map.append([])
@@ -102,7 +102,7 @@ def own_base_map(g):
 					map[i-thing[0]][j-thing[1]] += thing[2]
 	return map
 #enemy bases for attack
-def enemy_base_map(g):
+def get_enemy_base_map(g):
 	map = []
 	for i in range(30):
 		map.append([])
@@ -139,6 +139,10 @@ if(len(sys.argv) != 2):
 		sys.exit()
 g = colorfight.Game()
 
+gold_map = []
+own_base_map = []
+enemy_base_map = []
+
 
 def run():
 	name = str(sys.argv[1])
@@ -146,9 +150,14 @@ def run():
 	weights = get_weights(name)
 	print(name + " joined")
 	if g.JoinGame(name):
+		gold_map = get_gold_map(g)
+	
 		game_over = False
 		while not game_over:
 			#finds the best cell to attack
+			own_base_map = get_own_base_map(g)
+			enemy_base_map = get_enemy_base_map(g)
+			
 			best_cell = find_best_cell(weights)
 			status = g.AttackCell(best_cell[0], best_cell[1])
 			
@@ -230,20 +239,18 @@ def expected_value(coordinates, weights):
 	}
 	
 	#might have to screw with the scaling bc distance to edge will be bigger than distance to enemy
-	inputs['location_t'] = distanceToEdge(x,y) + distanceToEnemy(x,y) 
+	inputs['location_t'] = distanceToEdge(x,y) - distanceToEnemy(x,y) 
 	inputs['time_t'] = calculateTimeToTake(x,y)
 	
 	inputs['location_a'] = distanceToEdge(x,y)
 	inputs['time_a'] = calculateTimeToTake(x,y)
-	inputs['dist_gold_a'] = distanceToNearestGold(x,y)
+	inputs['dist_gold_a'] = gold_map[x][y]
 	inputs['enemy_cells_a'] = cellsOwned(cell)
 	inputs['score_a']  = scoreOf(cell)
 	
 	
 #	inputs.append(timeLeft())
 	
-	
-	#add more inputs here
 	
 	
 	if inputs.keys() != weights.keys():
@@ -306,13 +313,15 @@ def distanceToNearestGold(x,y):
 					cells.put(n)
 	return -1
 	
-	
+#Returns the time left until the game ends
 def timeLeft():
 	return g.endTime - g.currTime
 	
+#Calculates the distance from one point to another
 def distance(x1, y1, x2, y2):
 	return round(math.sqrt((x1-x2)**2 + (y1-y2)**2))
 	
+#Calculates the distance to an edge
 def distanceToEdge(x,y):
 	if(x > g.width/2):
 		x = x - g.width/2
@@ -320,7 +329,8 @@ def distanceToEdge(x,y):
 		x = x - g.height/2
 	return round(math.sqrt((x+1)**2 + (y+1)**2))
 	
-	
+
+#Calculates the time needed to take a cell	
 def calculateTimeToTake(x,y):
     cell = g.GetCell(x,y)
     numNeighbors = 0
