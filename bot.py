@@ -113,7 +113,8 @@ def enemy_base_map(g):
 			cell = g.GetCell(i,j)
 			if cell.isBase and cell.owner != g.uid:
 				for thing in base_weight_setter:
-					map[i-thing[0]][j-thing[1]] += thing[2]
+					if not g.getCell(thing[0], thing[1]).isBase:
+						map[i-thing[0]][j-thing[1]] += thing[2]
 	return map
 
 directions = [(0,1),(1,0),(-1,0),(0,-1)]
