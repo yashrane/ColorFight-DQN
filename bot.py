@@ -10,12 +10,8 @@ TODO:
 * Create the following weights:
 	-distance to base surroundings
 	-distance to gold
-	-isGold
-	-time to Take
 	-distance to own base
 	-number of cells the enemy owns
-	-Time left
-	-distance to edge
 	+anything else that you can think of
 '''
 
@@ -28,15 +24,15 @@ def run():
 	name = str(sys.argv[1])
 	
 	weights = get_weights(name)
-	
-	if g.JoinGame(name):
+	print(name + " joined")
+	if g.JoinGame(name):#this line throws an exception for whatever reason
 		game_over = False
 		while not game_over:
 			#finds the best cell to attack
 			best_cell = find_best_cell(weights)
 			status = g.AttackCell(best_cell[0], best_cell[1])
 			
-			game_over = status[1] == 4
+			game_over = (status[1] == 4)
 			g.Refresh()
 			
 			
@@ -59,7 +55,7 @@ def find_best_cell(weights):
 
 	valid_cells = get_all_valid_cells()
 	for cell in valid_cells:
-		cell.append(expected_value(cell))
+		cell.append(expected_value(cell, weights))
 		
 	#chooses the cell with the maximum expected_value, 
 	#picking one randomly in case of ties
@@ -80,10 +76,54 @@ def find_max(cells):
 	
 	
 #TODO: Returns the expected value for a cell based on the given weights
-def expected_value(weights):
-	return 1
+def expected_value(coordinates, weights):
+	x = coordinates[0]
+	y = coordinates[1]
+	cell = g.GetCell(x,y)
+	
+	inputs = []
+	inputs.append(isGold(cell))
+	inputs.append(calculateTimeToTake(x,y))
+	inputs.append(distanceToEdge(x,y))
+	inputs.append(timeLeft())
 	
 	
+	#add more inputs here
+	
+	
+	if len(inputs) is not len(weights):
+		print("Input length(" + str(len(inputs)) + ") does not match weights length(" + str(len(weights)))
+		return -1
+		
+	expected_value = 0
+	for i in range(len(inputs)):
+		expected_value+=(inputs[i]*weights[i])
+	return expected_value
+	
+	
+def timeLeft():
+	return g.endTime - g.currTime
+	
+def distanceToEdge(x,y):
+	if(x > g.width/2):
+		x = x - g.width/2
+	if(y > g.height/2):
+		x = x - g.height/2
+	return round(math.sqrt((x+1)**2 + (y+1)**2))
+	
+	
+def calculateTimeToTake(x,y):
+    cell = g.GetCell(x,y)
+    numNeighbors = 0
+    neighbors = (g.GetCell(x+1,y),g.GetCell(x,y+1),g.GetCell(x-1,y),g.GetCell(x,y-1))
+    for c in neighbors:
+        if c is not None and c.owner == g.uid:
+            numNeighbors = numNeighbors+1
+    
+    return cell.takeTime * (1 - 0.25*(numNeighbors - 1))
+	
+def isGold(cell):
+	return int(cell.cellType == 'gold')
 	
 #Returns the coordinates of all cells that can be attacked
 def get_all_valid_cells():
