@@ -1,7 +1,7 @@
 import csv
 import random
 
-num_weights = 11
+num_weights = 10
 num_bots = 10
 bots = {}
 kill = [4,6,8,9,10]

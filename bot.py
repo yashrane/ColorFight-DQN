@@ -18,7 +18,6 @@ TODO:
 	time_t: time weight for threat
 	
 	dist_gold_a: value of cell based on distance to gold
-	score_a: value of a cell
 	time_a: time weight for attacking
 	dist_base_a: value of cells surrounding enemy base based on distance
 	base_a: value of enemy base based on number of surrounding enemy cells
@@ -47,7 +46,6 @@ weights = {
 	"location_t": 0,
 	"time_t": 0,
 	"dist_gold_a": 0,
-	"score_a": 0,
 	"time_a": 0,
 	"dist_base_a": 0,
 	"base_a": 0,
@@ -180,12 +178,11 @@ def get_weights(id):
 				weights["location_t"] = row[3]
 				weights["time_t"] = row[4]
 				weights["dist_gold_a"] = row[5]
-				weights["score_a"] = row[6]
-				weights["time_a"] = row[7]
-				weights["dist_base_a"] = row[8]
-				weights["base_a"] = row[9]
-				weights["location_a"] = row[10]
-				weights["enemy_cells_a"] = row[11]
+				weights["time_a"] = row[6]
+				weights["dist_base_a"] = row[7]
+				weights["base_a"] = row[8]
+				weights["location_a"] = row[9]
+				weights["enemy_cells_a"] = row[10]
 				return
 	raise LookupError('The bot id could not be found.')
 			
@@ -255,7 +252,6 @@ def expected_value(coordinates, weights):
 	inputs['time_a'] = calculateTimeToTake(x,y)
 	inputs['dist_gold_a'] = gold_map[x][y]
 	inputs['enemy_cells_a'] = cellsOwned(cell)
-	inputs['score_a']  = scoreOf(cell)
 	inputs['dist_base_a'] = enemy_base_map[x][y]
 	
 	
