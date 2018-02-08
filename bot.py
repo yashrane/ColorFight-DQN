@@ -15,7 +15,6 @@ TODO:
 	dist_base_t: threat that a cell feels based on enemy distance to own base
 	dist_gold_t: threat that a cell feels based on enemy distance to own gold
 	location_t: threat that a cell feels based on location and distance to enemy
-	threshold_t: at what threat level should a cell be defended
 	time_t: time weight for threat
 	
 	dist_gold_a: value of cell based on distance to gold
@@ -46,7 +45,6 @@ weights = {
 	"dist_base_t": 0,
 	"dist_gold_t": 0,
 	"location_t": 0,
-	"threshold_t": 0,
 	"time_t": 0,
 	"dist_gold_a": 0,
 	"score_a": 0,
@@ -132,7 +130,7 @@ def enemy_base_surround(g):
 		for direction in directions:
 			if g.getCell(base[0],base[1]).owner == g.getCell(base[0]+direction[0], base[1]+direction[1]):
 				count += 1
-		base_score[(i,j)] = count
+		base_score[(i,j)] = 4 - count
 	return base_score
 
 
@@ -143,7 +141,7 @@ g = colorfight.Game()
 gold_map = []
 own_base_map = []
 enemy_base_map = []
-
+base_surround = {}
 
 def run():
 	name = str(sys.argv[1])
@@ -158,6 +156,7 @@ def run():
 			#finds the best cell to attack
 			own_base_map = get_own_base_map(g)
 			enemy_base_map = get_enemy_base_map(g)
+			base_surround = enemy_base_surround(g)
 			
 			best_cell = find_best_cell(weights)
 			status = g.AttackCell(best_cell[0], best_cell[1])
@@ -227,7 +226,6 @@ def expected_value(coordinates, weights):
 		"dist_base_t": 0,
 		"dist_gold_t": 0,
 		"location_t": 0,
-		"threshold_t": 0,
 		"time_t": 0,
 		
 		"dist_gold_a": 0,
@@ -239,16 +237,24 @@ def expected_value(coordinates, weights):
 		"enemy_cells_a": 0
 	}
 	
+	nearest_enemy = findNearestEnemy(x,y)
+	
 	#might have to screw with the scaling bc distance to edge will be bigger than distance to enemy
-	inputs['location_t'] = distanceToEdge(x,y) - distanceToEnemy(x,y) 
+	inputs['location_t'] = distanceToEdge(x,y) - distance(x,y,nearest_enemy.x, nearest_enemy.y) 
 	inputs['time_t'] = calculateTimeToTake(x,y)
+	inputs['dist_base_t'] = own_base_map[nearest_enemy.x][nearest_enemy.y]
+	inputs['dist_gold_t'] = gold_map[nearest_enemy.x][nearest_enemy.y]
 	
 	inputs['location_a'] = distanceToEdge(x,y)
 	inputs['time_a'] = calculateTimeToTake(x,y)
 	inputs['dist_gold_a'] = gold_map[x][y]
 	inputs['enemy_cells_a'] = cellsOwned(cell)
 	inputs['score_a']  = scoreOf(cell)
+	inputs['dist_base_a'] = enemy_base_map[x][y]
 	
+	
+	if cell.isBase:
+		inputs['base_a'] = base_surround[(x,y)]
 	
 #	inputs.append(timeLeft())
 	
@@ -261,9 +267,9 @@ def expected_value(coordinates, weights):
 	expected_value = 0	
 	time = 0
 	if cell.owner == g.uid:
-		keys = weights.keys()[:5]#all the threat keys
+		keys = [key for key in weights.keys() if key[-1] == 't']#all the threat keys
 	else:
-		keys = weight.keys()[5:]#all the attacking keys
+		keys = [key for key in weights.keys() if key[-1] == 'a']#all the threat keys#all the attacking keys
 		
 	for key in keys:
 		if key[:4] == "time":
@@ -283,21 +289,21 @@ def cellsOwned(cell):
 	owner = [user for user in g.users if user.id == cell.owner]
 	owner = owner[0]
 	return owner.cellNum
-	
-#Finds the distance to the nearest enemy using a breadth first search
-def distanceToEnemy(x,y):
+
+#Finds the nearest enemy using a breadth first search	
+def findNearestEnemy(x,y):	
 	cells = queue.Queue()
 	cells.put(g.GetCell(x,y))
 	while(not cells.empty()):
 		cell = cells.get()
 		if(cell.owner != g.uid):
-			return distance(x,y,cell.x, cell.y)
+			return cell
 		else:
 			neighbors = (g.GetCell(x+1,y),g.GetCell(x,y+1),g.GetCell(x-1,y),g.GetCell(x,y-1))
 			for n in neighbors:
 				if(n is not None):
 					cells.put(n)
-	return -1
+	return None
 	
 #Finds the nearest gold using a breadth first search
 def distanceToNearestGold(x,y):
@@ -373,4 +379,4 @@ def valid(x,y):
 	return False
 	
 	
-run()
+#	run()
