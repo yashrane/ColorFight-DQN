@@ -93,7 +93,7 @@ def get_own_base_map(g):
 	for i in range(30):
 		for j in range(30):
 			cell = g.GetCell(i,j)
-			if cell.isBase and cell.owner == g.uid:
+			if cell is not None and cell.isBase and cell.owner == g.uid:
 				for thing in base_weight_setter:
 					map[i-thing[0]][j-thing[1]] += thing[2]
 	return map
@@ -107,7 +107,7 @@ def get_enemy_base_map(g):
 	for i in range(30):
 		for j in range(30):
 			cell = g.GetCell(i,j)
-			if cell.isBase and cell.owner != g.uid:
+			if cell is not None and cell.isBase and cell.owner != g.uid:
 				for thing in base_weight_setter:
 					if not g.getCell(thing[0], thing[1]).isBase:
 						map[i-thing[0]][j-thing[1]] += thing[2]
@@ -125,10 +125,13 @@ def enemy_base_surround(g):
 	base_score = {}
 	for base in enemy_bases:
 		count = 0
+		num = 0
 		for direction in directions:
-			if g.getCell(base[0],base[1]).owner == g.getCell(base[0]+direction[0], base[1]+direction[1]):
-				count += 1
-		base_score[(i,j)] = 4 - count
+			if g.getCell(base[0]+direction[0], base[1]+direction[1]) is not None:
+				num += 1
+				if g.getCell(base[0],base[1]).owner == g.getCell(base[0]+direction[0], base[1]+direction[1]):
+					count += 1
+		base_score[(i,j)] = num - count
 	return base_score
 
 
