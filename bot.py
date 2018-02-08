@@ -164,6 +164,7 @@ def expected_value(coordinates, weights):
 		"location_t": 0,
 		"threshold_t": 0,
 		"time_t": 0,
+		
 		"dist_gold_a": 0,
 		"score_a": 0,
 		"time_a": 0,
@@ -174,12 +175,12 @@ def expected_value(coordinates, weights):
 	}
 	
 	inputs['location_a'] = distanceToEdge(x,y)
-	inputs['time_a'] = (calculateTimeToTake(x,y)
+	inputs['time_a'] = calculateTimeToTake(x,y)
 	inputs['dist_gold_a'] = distanceToNearestGold(x,y)
 	inputs['enemy_cells_a'] = cellsOwned(cell)
+	inputs['score_a']  = scoreOf(cell)
 	
 	
-#	inputs.append(isGold(cell))
 #	inputs.append(timeLeft())
 	
 	
@@ -189,14 +190,23 @@ def expected_value(coordinates, weights):
 	if inputs.keys() != weights.keys():
 		print("Input length(" + str(len(inputs)) + ") does not match weights length(" + str(len(weights)))
 		return -1
+	
+	expected_value = 0	
+	if cell.owner == g.uid:
+		keys = weights.keys()[:5]#all the threat keys
+	else:
+		keys = weight.keys()[5:]#all the attacking keys
 		
-		
-	#TODO: modify this to match the new formulas (use threats if cell is owned by you, attack if owned by someone else)
-	expected_value = 0
-	for key in weights.keys():
+	for key in keys:
 		expected_value+=(inputs[key]*weights[key])
+			
 	return expected_value
 	
+	
+def scoreOf(cell):
+	if cell.cellType == "gold":
+		return 10
+	return 1
 	
 def cellsOwned(cell):
 	owner = [user for user in g.users if user.id == cell.owner]
@@ -245,6 +255,7 @@ def calculateTimeToTake(x,y):
 	
 def isGold(cell):
 	return int(cell.cellType == 'gold')
+	
 	
 #Returns the coordinates of all cells that can be attacked
 def get_all_valid_cells():
