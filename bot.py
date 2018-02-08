@@ -174,6 +174,10 @@ def expected_value(coordinates, weights):
 		"enemy_cells_a": 0
 	}
 	
+	#might have to screw with the scaling bc distance to edge will be bigger than distance to enemy
+	inputs['location_t'] = distanceToEdge(x,y) + distanceToEnemy(x,y) 
+	inputs['time_t'] = calculateTimeToTake(x,y)
+	
 	inputs['location_a'] = distanceToEdge(x,y)
 	inputs['time_a'] = calculateTimeToTake(x,y)
 	inputs['dist_gold_a'] = distanceToNearestGold(x,y)
@@ -212,6 +216,21 @@ def cellsOwned(cell):
 	owner = [user for user in g.users if user.id == cell.owner]
 	owner = owner[0]
 	return owner.cellNum
+	
+#Finds the distance to the nearest enemy using a breadth first search
+def distanceToEnemy(x,y):
+	cells = queue.Queue()
+	cells.put(g.GetCell(x,y))
+	while(not cells.empty()):
+		cell = cells.get()
+		if(cell.owner != g.uid):
+			return distance(x,y,cell.x, cell.y)
+		else:
+			neighbors = (g.GetCell(x+1,y),g.GetCell(x,y+1),g.GetCell(x-1,y),g.GetCell(x,y-1))
+			for n in neighbors:
+				if(n is not None):
+					cells.put(n)
+	return -1
 	
 #Finds the nearest gold using a breadth first search
 def distanceToNearestGold(x,y):
