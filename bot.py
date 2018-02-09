@@ -250,25 +250,24 @@ def expected_value(coordinates, weights):
 		"enemy_cells_a": 0
 	}
 	
-	nearest_enemy = findNearestEnemy(x,y)
 	
 	
 	#might have to screw with the scaling bc distance to edge will be bigger than distance to enemy
-	inputs['location_t'] = distanceToEdge(x,y) - distance(x,y,nearest_enemy.x, nearest_enemy.y) 
+	inputs['location_t'] = distanceToEdge(x,y)
 	inputs['time_t'] = calculateTimeToTake(x,y)
-	#inputs['dist_base_t'] = own_base_map[nearest_enemy.x][nearest_enemy.y]
-	inputs['dist_gold_t'] = gold_map[nearest_enemy.x][nearest_enemy.y]
+	inputs['dist_base_t'] = own_base_map[x][y]
+	inputs['dist_gold_t'] = gold_map[x][y]
 	
 	inputs['location_a'] = distanceToEdge(x,y)
 	inputs['time_a'] = calculateTimeToTake(x,y)
 	inputs['dist_gold_a'] = gold_map[x][y]
 	if cell.owner != 0:
 		inputs['enemy_cells_a'] = cellsOwned(cell)
-	#inputs['dist_base_a'] = enemy_base_map[x][y]
+	inputs['dist_base_a'] = enemy_base_map[x][y]
 	
 	
-	#if cell.isBase:
-	#	inputs['base_a'] = base_surround[(x,y)]
+	if cell.isBase:
+		inputs['base_a'] = base_surround[(x,y)]
 	
 #	inputs.append(timeLeft())
 	
