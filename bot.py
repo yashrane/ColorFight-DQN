@@ -165,6 +165,8 @@ def run():
 			status = g.AttackCell(best_cell[0], best_cell[1])
 			print(name, status)
 			game_over = (status[1] == 4)
+			if game_over:
+				sys.exit()
 			g.Refresh()
 	else:
 		print(name + " Could not join game!")
@@ -301,6 +303,8 @@ def scoreOf(cell):
 def cellsOwned(cell):
 	owner = [user for user in g.users if user.id == cell.owner]
 	owner = owner[0]
+	if owner.id == 0:
+		return 0
 	return owner.cellNum
 
 #Finds the nearest enemy using a breadth first search	
@@ -344,10 +348,10 @@ def distance(x1, y1, x2, y2):
 #Calculates the distance to an edge
 def distanceToEdge(x,y):
 	if(x > g.width/2):
-		x = x - g.width/2
+		x = g.width - x
 	if(y > g.height/2):
-		x = x - g.height/2
-	return round(math.sqrt((x+1)**2 + (y+1)**2))
+		y =g.height - y
+	return 22 - round(math.sqrt((x+1)**2 + (y+1)**2))
 	
 
 #Calculates the time needed to take a cell	
@@ -386,7 +390,7 @@ def hasAdjacentEnemy(cell):
 	directions = [(0,1), (0,-1), (1, 0), (-1,0)]
 	for direction in directions:
 		neighbor = g.GetCell(cell.x+direction[0], cell.y+direction[1])
-		if neighbor is not None and neighbor.owner != g.uid:
+		if neighbor is not None and neighbor.owner != g.uid and neighbor.owner != 0:
 			return True
 	return False
 	

@@ -21,38 +21,39 @@ def find_cell(g):
 				return x,y
 
 def find_user(g, userid):
+	if userid == 0:
+		return
 	for user in g.users:
 		if user.id == userid:
 			return user
 def run():
 	#restart server
 	headers = {'content-type': 'application/json'}
-	r = requests.post(hostUrl + 'startgame', data=json.dumps({"admin_password":'', "last_time":600, "ai_join_time":60, "ai_only":True, "soft":False}), headers = headers)
+	r = requests.post(hostUrl + 'startgame', data=json.dumps({"admin_password":'', "last_time":300, "ai_join_time":60, "ai_only":True, "soft":False}), headers = headers)
 	
 	g = colorfight.Game()
 	if g.JoinGame('control'):
 		#start subprocesses
 		subprocess.call(['./bots.sh'])
 		#lag control
-		time.sleep(10)
+		time.sleep(15)
 		#setup scores list in case some die
 		scores = {}
+		g.Refresh()
 		for user in g.users:
 			if user.id != g.uid:
 				scores[user.name] = 0
 		#find cell and defend that cell
 		x,y = find_cell(g)
 		status = g.AttackCell(x,y)
-		while status[1] != 4:
-			status = g.AttackCell(x,y)
-			print('attacking cells')
+		while g.endTime - g.currTime > 3:
+			g.Refresh()
 		#gather scores in dictionary
-
 		for x in range(30):
 			for y in range(30):
 				cell = g.GetCell(x,y)
 				user = find_user(g, cell.owner)
-				if user.id != g.uid:
+				if user is not None and user.id != g.uid:
 					if cell.cellType == 'gold':
 						scores[user.name] += 10
 					else:
