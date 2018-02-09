@@ -135,7 +135,7 @@ def enemy_base_surround(g):
 				num += 1
 				if g.GetCell(base[0],base[1]).owner == g.GetCell(base[0]+direction[0], base[1]+direction[1]):
 					count += 1
-		base_score[(i,j)] = num - count
+		base_score[base] = num - count
 	return base_score
 
 
@@ -163,7 +163,7 @@ def run():
 			#finds the best cell to attack			
 			best_cell = find_best_cell(weights)
 			status = g.AttackCell(best_cell[0], best_cell[1])
-			
+			print(name, status)
 			game_over = (status[1] == 4)
 			g.Refresh()
 	else:
@@ -265,8 +265,8 @@ def expected_value(coordinates, weights):
 		inputs['enemy_cells_a'] = cellsOwned(cell)
 	inputs['dist_base_a'] = enemy_base_map[x][y]
 	
-	
-	if cell.isBase:
+
+	if cell.isBase and cell.owner != g.uid:
 		inputs['base_a'] = base_surround[(x,y)]
 	
 #	inputs.append(timeLeft())
@@ -374,11 +374,21 @@ def get_all_valid_cells():
 			# Get a cell
 			c = g.GetCell(x,y)
 			
-			if valid(x,y):
+			if valid(x,y) and hasAdjacentEnemy(c):
 				valid_cells.append([x,y])
 	return valid_cells
 	
 	
+# Returns true if cell or its neighbors are an enemy cells 
+def hasAdjacentEnemy(cell):
+	if cell.owner != g.uid:
+		return True
+	directions = [(0,1), (0,-1), (1, 0), (-1,0)]
+	for direction in directions:
+		neighbor = g.GetCell(cell.x+direction[0], cell.y+direction[1])
+		if neighbor is not None and neighbor.owner != g.uid:
+			return True
+	return False
 	
 #Returns True if you can attack the cell at x,y.
 def valid(x,y):

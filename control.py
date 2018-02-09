@@ -27,7 +27,7 @@ def find_user(g, userid):
 def run():
 	#restart server
 	headers = {'content-type': 'application/json'}
-	r = requests.post(hostUrl + 'startgame', data=json.dumps({"admin_password":'', "last_time":300, "ai_join_time":60, "ai_only":True, "soft":False}), headers = headers)
+	r = requests.post(hostUrl + 'startgame', data=json.dumps({"admin_password":'', "last_time":600, "ai_join_time":60, "ai_only":True, "soft":False}), headers = headers)
 	
 	g = colorfight.Game()
 	if g.JoinGame('control'):
