@@ -135,7 +135,7 @@ def enemy_base_surround(g):
 				num += 1
 				if g.GetCell(base[0],base[1]).owner == g.GetCell(base[0]+direction[0], base[1]+direction[1]):
 					count += 1
-		base_score[(i,j)] = num - count
+		base_score[base] = num - count
 	return base_score
 
 
@@ -163,7 +163,7 @@ def run():
 			#finds the best cell to attack			
 			best_cell = find_best_cell(weights)
 			status = g.AttackCell(best_cell[0], best_cell[1])
-			
+			print(name, status)
 			game_over = (status[1] == 4)
 			g.Refresh()
 	else:
@@ -264,11 +264,11 @@ def expected_value(coordinates, weights):
 	inputs['dist_gold_a'] = gold_map[x][y]
 	if cell.owner != 0:
 		inputs['enemy_cells_a'] = cellsOwned(cell)
-	#inputs['dist_base_a'] = enemy_base_map[x][y]
+	inputs['dist_base_a'] = enemy_base_map[x][y]
 	
 	
-	#if cell.isBase:
-	#	inputs['base_a'] = base_surround[(x,y)]
+	if cell.isBase and cell.owner != g.uid:
+		inputs['base_a'] = base_surround[(x,y)]
 	
 #	inputs.append(timeLeft())
 	
