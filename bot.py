@@ -145,7 +145,7 @@ if(len(sys.argv) != 2):
 	sys.exit()
 g = colorfight.Game()
 
-gold_map = []
+gold_map = get_gold_map(g)
 own_base_map = []
 enemy_base_map = []
 base_surround = {}
@@ -156,7 +156,6 @@ def run():
 	weights = get_weights(name)
 	print(name + " joined")
 	if g.JoinGame(name):
-		gold_map = get_gold_map(g)
 	
 		game_over = False
 		while not game_over:
@@ -180,23 +179,27 @@ def get_weights(id):
 		for row in reader:
 			#if we find the correct id, then return the corresponding weights
 			if(row[0] == id):
-				weights["dist_base_t"] = row[1]
-				weights["dist_gold_t"] = row[2]
-				weights["location_t"] = row[3]
-				weights["time_t"] = row[4]
-				weights["dist_gold_a"] = row[5]
-				weights["time_a"] = row[6]
-				weights["dist_base_a"] = row[7]
-				weights["base_a"] = row[8]
-				weights["location_a"] = row[9]
-				weights["enemy_cells_a"] = row[10]
-				return
+				weights["dist_base_t"] = float(row[1])
+				weights["dist_gold_t"] = float(row[2])
+				weights["location_t"] = float(row[3])
+				weights["time_t"] = float(row[4])
+				weights["dist_gold_a"] = float(row[5])
+				weights["time_a"] = float(row[6])
+				weights["dist_base_a"] = float(row[7])
+				weights["base_a"] = float(row[8])
+				weights["location_a"] = float(row[9])
+				weights["enemy_cells_a"] = float(row[10])
+				return weights
+				
 	raise LookupError('The bot id could not be found.')
 			
 			
 			
 #Finds the best cell to attack using the given weights
 def find_best_cell(weights):
+	global own_base_map
+	global enemy_base_map
+	global base_surround
 
 	#Creates score maps to make calculating expected score easier
 	own_base_map = get_own_base_map(g)
@@ -239,7 +242,6 @@ def expected_value(coordinates, weights):
 		"time_t": 0,
 		
 		"dist_gold_a": 0,
-		"score_a": 0,
 		"time_a": 0,
 		"dist_base_a": 0,
 		"base_a": 0,
@@ -248,6 +250,7 @@ def expected_value(coordinates, weights):
 	}
 	
 	nearest_enemy = findNearestEnemy(x,y)
+	
 	
 	#might have to screw with the scaling bc distance to edge will be bigger than distance to enemy
 	inputs['location_t'] = distanceToEdge(x,y) - distance(x,y,nearest_enemy.x, nearest_enemy.y) 
@@ -258,7 +261,8 @@ def expected_value(coordinates, weights):
 	inputs['location_a'] = distanceToEdge(x,y)
 	inputs['time_a'] = calculateTimeToTake(x,y)
 	inputs['dist_gold_a'] = gold_map[x][y]
-	inputs['enemy_cells_a'] = cellsOwned(cell)
+	if cell.owner != 0:
+		inputs['enemy_cells_a'] = cellsOwned(cell)
 	inputs['dist_base_a'] = enemy_base_map[x][y]
 	
 	
