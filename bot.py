@@ -169,6 +169,7 @@ def run():
 			g.Refresh()
 	else:
 		print(name + " Could not join game!")
+		run()
 			
 			
 			
