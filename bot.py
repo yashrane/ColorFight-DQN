@@ -3,6 +3,7 @@ import csv
 import colorfight
 import random
 import queue
+import math
 
 '''
 TODO: 
@@ -112,7 +113,7 @@ def get_enemy_base_map(g):
 			if cell.isBase and cell.owner != g.uid:
 				for thing in base_weight_setter:
 					if g.GetCell(i-thing[0],j-thing[1]) is not None:
-						if not g.getCell(thing[0], thing[1]).isBase:
+						if not g.GetCell(i-thing[0], j-thing[1]).isBase:
 							map[i-thing[0]][j-thing[1]] += thing[2]
 	return map
 
@@ -122,7 +123,7 @@ def enemy_base_surround(g):
 	enemy_bases = []
 	for i in range(30):
 		for j in range(30):
-			cell = g.getCell(i,j)
+			cell = g.GetCell(i,j)
 			if cell.isBase and cell.owner != g.uid:
 				enemy_bases.append((i,j))
 	base_score = {}
@@ -130,9 +131,9 @@ def enemy_base_surround(g):
 		count = 0
 		num = 0
 		for direction in directions:
-			if g.getCell(base[0]+direction[0], base[1]+direction[1]) is not None:
+			if g.GetCell(base[0]+direction[0], base[1]+direction[1]) is not None:
 				num += 1
-				if g.getCell(base[0],base[1]).owner == g.getCell(base[0]+direction[0], base[1]+direction[1]):
+				if g.GetCell(base[0],base[1]).owner == g.GetCell(base[0]+direction[0], base[1]+direction[1]):
 					count += 1
 		base_score[(i,j)] = num - count
 	return base_score
