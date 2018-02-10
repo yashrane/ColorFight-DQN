@@ -153,6 +153,7 @@ gold_map = get_gold_map(g)
 own_base_map = []
 enemy_base_map = []
 base_surround = {}
+initial_time_diff = 0.0
 
 def run():
 	name = str(sys.argv[1])
@@ -189,6 +190,7 @@ def num_bases(g):
 			if (cell.isBase or cell.isBuilding )and cell.owner == g.uid:
 				n += 1
 	return n
+	
 #Finds the best base location by summing the distances to non-user cells in cardinal directions
 def find_best_base_loc(g):
 	best = (-1, -1, -5)
@@ -243,6 +245,19 @@ def get_weights(id):
 				weights["location_a"] = float(row[9])
 				weights["enemy_cells_a"] = float(row[10])
 				weights["base_theshold"] = float(row[11])
+				
+				weights["t_dist_base_t"] = float(row[12])
+				weights["t_dist_gold_t"] = float(row[13])
+				weights["t_location_t"] = float(row[13])
+				weights["t_time_t"] = float(row[15])
+				weights["t_dist_gold_a"] = float(row[16])
+				weights["t_time_a"] = float(row[17])
+				weights["t_dist_base_a"] = float(row[18])
+				weights["t_base_a"] = float(row[19])
+				weights["t_location_a"] = float(row[20])
+				weights["t_enemy_cells_a"] = float(row[21])
+				weights["t_base_theshold"] = float(row[22])
+				
 				return weights
 				
 	raise LookupError('The bot id could not be found.')
@@ -299,7 +314,7 @@ def expected_value(coordinates, weights):
 		"dist_base_a": 0,
 		"base_a": 0,
 		"location_a": 0,
-		"enemy_cells_a": 0
+		"enemy_cells_a": 0,
 	}
 	
 	
@@ -320,14 +335,15 @@ def expected_value(coordinates, weights):
 
 	if cell.isBase and cell.owner != g.uid:
 		inputs['base_a'] = base_surround[(x,y)]
+
+	global initial_time_diff
+	if initial_time_diff == 0.0:
+		initial_time_diff = timeLeft()
+		
+	time_left = timeLeft()/initial_time_diff
 	
-#	inputs.append(timeLeft())
 	
 	
-	
-	# if inputs.keys() != weights.keys():
-	# 	print("Input length(" + str(len(inputs)) + ") does not match weights length(" + str(len(weights)))
-	# 	return -1
 	
 	expected_value = 0	
 	time = 0
@@ -338,12 +354,12 @@ def expected_value(coordinates, weights):
 		
 	for key in keys:
 		if key[:4] == "time":
-			time = inputs[key]**weights[key]
-		else:
+			time = inputs[key]**(weights[key] +time_left*weights[("t_"+key)])
+		elif key[:2] != "t_":
 			if weights[key] < 0:
 				expected_value += 0
 			else:
-				expected_value+=(inputs[key]*weights[key])
+				expected_value+=(inputs[key]*(weights[key] + time_left*weights[("t_"+key)]))
 			
 	return expected_value/time
 	
