@@ -2,7 +2,7 @@ import csv
 import random
 import operator
 
-num_weights = 10
+num_weights = 11
 num_bots = 10
 bots = {}
 kill = [4,6,8,9,10]
@@ -13,6 +13,7 @@ def randomize_bots():
 		bots[str(i+1)] = []
 		for j in range(num_weights):
 			bots[str(i+1)].append(random.uniform(.1,3.0))
+		bots[str(i+1)][num_weights-1] = random.uniform(10,50)
 	with open("bots.csv", 'w') as file:
 		bots_csv = csv.writer(file)
 		for bot_id in bots.keys():
@@ -51,8 +52,10 @@ def breed(scores):
 				bots[d].append(bots[id1][i])
 			#20% mutate chance per gene
 			mutate = random.randint(1,10)
-			if mutate >= 5:
-				bots[d][i] = float(bots[d][i]) + random.uniform(-.5,.5)
+			if mutate >= 10:
+				bots[d][i] = float(bots[d][i]) + random.uniform(-.2,.2)
+			if(float(bots[d][i]) < 0):
+				bots[d][i] = 0
 	#write updated genes to file
 	with open("bots.csv", 'w') as file:
 		bots_csv = csv.writer(file)

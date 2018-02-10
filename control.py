@@ -6,6 +6,7 @@ import subprocess
 import json
 import requests
 import time
+import os
 
 
 hostUrl   = 'https://colorfight-dqn.herokuapp.com/'
@@ -29,8 +30,8 @@ def find_user(g, userid):
 def run():
 	#restart server
 	headers = {'content-type': 'application/json'}
-	r = requests.post(hostUrl + 'startgame', data=json.dumps({"admin_password":'', "last_time":300, "ai_join_time":60, "ai_only":True, "soft":False}), headers = headers)
-	
+	r = requests.post(hostUrl + 'startgame', data=json.dumps({"admin_password":'', "last_time":320, "ai_join_time":80, "ai_only":True, "soft":False}), headers = headers)
+	time.sleep(5)
 	g = colorfight.Game()
 	if g.JoinGame('control'):
 		#start subprocesses
@@ -46,7 +47,7 @@ def run():
 		#find cell and defend that cell
 		x,y = find_cell(g)
 		status = g.AttackCell(x,y)
-		while g.endTime - g.currTime > 3:
+		while g.endTime - g.currTime > 1.5:
 			g.Refresh()
 		#gather scores in dictionary
 		for x in range(30):
@@ -60,6 +61,7 @@ def run():
 						scores[user.name] += 1
 		#mutate
 		genetic.breed(scores)
+		time.sleep(3)
 		#restart
 		run()
 	else:

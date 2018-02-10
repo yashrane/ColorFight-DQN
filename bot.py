@@ -51,7 +51,8 @@ weights = {
 	"dist_base_a": 0,
 	"base_a": 0,
 	"location_a": 0,
-	"enemy_cells_a": 0
+	"enemy_cells_a": 0,
+	"base_theshold": 0
 }
 #get the map of weights based on gold cells
 def get_gold_map(g):
@@ -110,7 +111,7 @@ def get_enemy_base_map(g):
 	for i in range(30):
 		for j in range(30):
 			cell = g.GetCell(i,j)
-			if cell.isBase and cell.owner != g.uid:
+			if cell.isBase:
 				for thing in base_weight_setter:
 					if g.GetCell(i-thing[0],j-thing[1]) is not None:
 						if not g.GetCell(i-thing[0], j-thing[1]).isBase:
@@ -135,7 +136,10 @@ def enemy_base_surround(g):
 				num += 1
 				if g.GetCell(base[0],base[1]).owner == g.GetCell(base[0]+direction[0], base[1]+direction[1]):
 					count += 1
-		base_score[base] = num - count
+		if count == num:
+			base_score[base] = 4
+		else:
+			base_score[base] = 0
 	return base_score
 
 
@@ -154,25 +158,71 @@ def run():
 	name = str(sys.argv[1])
 	
 	weights = get_weights(name)
-	print(name + " joined")
+	print(name, weights)
 	if g.JoinGame(name):
 	
 		game_over = False
 		while not game_over:
-			
+			#finds the best cell to build a base
+			if(num_bases(g) < 3):
+				if(g.cellNum > weights["base_theshold"]):
+					cellx,celly = find_best_base_loc(g)
+					g.BuildBase(cellx,celly)
+					g.Refresh()
 			#finds the best cell to attack			
 			best_cell = find_best_cell(weights)
 			status = g.AttackCell(best_cell[0], best_cell[1])
-			print(name, status)
-			game_over = (status[1] == 4)
+			game_over = (status[1] == 4 or g.cellNum == 0)
 			if game_over:
+				print('killing bot', name)
 				sys.exit()
 			g.Refresh()
 	else:
 		print(name + " Could not join game!")
 		run()
-			
-			
+
+def num_bases(g):
+	n = 0
+	for i in range(30):
+		for j in range(30):
+			cell = g.GetCell(i,j)
+			if (cell.isBase or cell.isBuilding )and cell.owner == g.uid:
+				n += 1
+	return n
+#Finds the best base location by summing the distances to non-user cells in cardinal directions
+def find_best_base_loc(g):
+	best = (-1, -1, -5)
+	for i in range(30):
+		for j in range(30):
+			if(g.GetCell(i,j).owner == g.uid):
+				x,y,count = i,j,-4
+				cell = g.GetCell(x,y)
+				while(cell is not None and not cell.isBase and (cell.owner == g.uid or cell.owner == 0)):
+					count += 1
+					x -= 1
+					cell = g.GetCell(x,y)
+				x,y = i,j
+				cell = g.GetCell(x,y)
+				while(cell is not None and not cell.isBase and (cell.owner == g.uid or cell.owner == 0)):
+					count += 1
+					x += 1
+					cell = g.GetCell(x,y)
+				x,y = i,j
+				cell = g.GetCell(x,y)
+				while(cell is not None and not cell.isBase and (cell.owner == g.uid or cell.owner == 0)):
+					count += 1
+					y += 1
+					cell = g.GetCell(x,y)
+				x,y = i,j
+				cell = g.GetCell(x,y)
+				while(cell is not None and not cell.isBase and (cell.owner == g.uid or cell.owner == 0)):
+					count += 1
+					y -= 1
+					cell = g.GetCell(x,y)
+				if count > best[2]:
+					best = (i,j,count)
+	return best[0],best[1]
+
 			
 #Finds the weights in bots.csv for a given bot id
 #Raises a lookup error if it cannot be found
@@ -192,6 +242,7 @@ def get_weights(id):
 				weights["base_a"] = float(row[8])
 				weights["location_a"] = float(row[9])
 				weights["enemy_cells_a"] = float(row[10])
+				weights["base_theshold"] = float(row[11])
 				return weights
 				
 	raise LookupError('The bot id could not be found.')
@@ -216,18 +267,18 @@ def find_best_cell(weights):
 		
 	#chooses the cell with the maximum expected_value, 
 	#picking one randomly in case of ties
-	best_cell = random.choice(find_max(valid_cells))
+	best_cell = find_max(valid_cells)
 	return (best_cell[0],best_cell[1])
 
 	
 	
 #Return a list of all cells with the largest value
 def find_max(cells):
-    m = (-1,-1,-1)
+    m = (-1,-1,-9999)
     for cell in cells:
         if cell[2] > m[2]:
             m = cell
-    return [cell for cell in cells if cell[2] == m[2]]
+    return m
 	
 	
 	
@@ -243,7 +294,6 @@ def expected_value(coordinates, weights):
 		"dist_gold_t": 0,
 		"location_t": 0,
 		"time_t": 0,
-		
 		"dist_gold_a": 0,
 		"time_a": 0,
 		"dist_base_a": 0,
@@ -275,22 +325,25 @@ def expected_value(coordinates, weights):
 	
 	
 	
-	if inputs.keys() != weights.keys():
-		print("Input length(" + str(len(inputs)) + ") does not match weights length(" + str(len(weights)))
-		return -1
+	# if inputs.keys() != weights.keys():
+	# 	print("Input length(" + str(len(inputs)) + ") does not match weights length(" + str(len(weights)))
+	# 	return -1
 	
 	expected_value = 0	
 	time = 0
 	if cell.owner == g.uid:
 		keys = [key for key in weights.keys() if key[-1] == 't']#all the threat keys
 	else:
-		keys = [key for key in weights.keys() if key[-1] == 'a']#all the threat keys#all the attacking keys
+		keys = [key for key in weights.keys() if key[-1] == 'a']#all the attacking keys
 		
 	for key in keys:
 		if key[:4] == "time":
 			time = inputs[key]**weights[key]
 		else:
-			expected_value+=(inputs[key]*weights[key])
+			if weights[key] < 0:
+				expected_value += 0
+			else:
+				expected_value+=(inputs[key]*weights[key])
 			
 	return expected_value/time
 	
@@ -305,7 +358,7 @@ def cellsOwned(cell):
 	owner = owner[0]
 	if owner.id == 0:
 		return 0
-	return owner.cellNum
+	return owner.cellNum/900
 
 #Finds the nearest enemy using a breadth first search	
 def findNearestEnemy(x,y):	
@@ -363,7 +416,7 @@ def calculateTimeToTake(x,y):
         if c is not None and c.owner == g.uid:
             numNeighbors = numNeighbors+1
     
-    return cell.takeTime * (1 - 0.25*(numNeighbors - 1))
+    return cell.takeTime * (1 - 0.25*(numNeighbors - 1))* 3
 	
 def isGold(cell):
 	return int(cell.cellType == 'gold')
