@@ -34,8 +34,12 @@ def getStateTensor(g):
 			tensor[x,y,3] = calculateTimeToTake(g,x,y)					#takeTime
 			tensor[x,y,4] = calculateTimeToFinish(g,c)					#finishTime
 	return torch.from_numpy(tensor)
+	
+	
+
 			
-			
+		
+	
 			
 #calculates the adjusted time it takes to capture a cell, 
 #returning the max float if we already own the cell

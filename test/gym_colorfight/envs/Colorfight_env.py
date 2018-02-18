@@ -42,14 +42,10 @@ class ColorfightEnv(gym.Env):
 		'''
 		#Variables that define the environment
 		game = Game()
-		game.JoinGame('MyAI2')
+		game.JoinGame('Q Stands For Q')
 
 
-		#This is the shit i havent been able to figure out yet
 		'''
-		# Define what the agent can do
-		# Sell at 0.00 EUR, 0.10 Euro, ..., 2.00 Euro
-		self.action_space = spaces.Discrete(21)
 
 		# Observation is the remaining time
 		low = np.array([0.0,  # remaining_tries
@@ -58,9 +54,16 @@ class ColorfightEnv(gym.Env):
 						 ])
 		self.observation_space = spaces.Box(low, high)
 		'''
+		
+		self.observation_space = spaces.Box(low=0.0, high=np.finfo(np.float64).max, shape=(30,30,8))
+		
+		# Define what the agent can do
+		self.action_space = spaces.Tuple(spaces.Discrete(30), spaces.Discrete(30))
+		
 		# Store what the agent tried
 		self.curr_episode = -1
 		self.action_episode_memory = []
+		
 		
 	def step(self, action):#im going to assume action is a tuple telling me what cell to attack
 		"""
@@ -119,7 +122,8 @@ class ColorfightEnv(gym.Env):
 		self.action_episode_memory[self.curr_episode].append(action)
 		self.game.AttackCell(action[0], action[1])
 		
-
+#might want to change this to match brian's idea
+#Need to make sure it'll work even when clipped from -1 to 1
 	def get_reward(self, state):
 		score = torch.mul(state[:,:,2],state[:,:,0])
 		return score.sum()
@@ -150,7 +154,7 @@ class ColorfightEnv(gym.Env):
 	def get_state(self):
 		"""Get the observation."""
 		self.game.Refresh()
-		tensor = np.empty(shape = (self.game.width, self.game.height, 5), dtype=np.float64)
+		tensor = np.empty(shape = (self.game.width, self.game.height, 8), dtype=np.float64)
 		for x in range(self.game.width):
 			for y in range(self.game.height):
 				c = self.game.GetCell(x,y)
@@ -158,7 +162,12 @@ class ColorfightEnv(gym.Env):
 				tensor[x,y,1] = (int)(c.owner != self.game.uid and c.owner != 0)	#isEnemy
 				tensor[x,y,2] = (int)(c.cellType == 'gold')*9+1						#score
 				tensor[x,y,3] = self.calculateTimeToTake(x,y)						#takeTime
-				tensor[x,y,4] = self.calculateTimeToFinish(c)						#finishTime
+				tensor[x,y,4] = self.calculateTimeToFinish(c)						#finishTime - do we still want this?
+				tensor[x,y,5] = (int)(c.cellType == 'gold')							#isGold
+				tensor[x,y,6] = (int)(c.cellType == 'energy')						#isEnergy
+				tensor[x,y,7] = (int)(c.isBase)										#isBase
+				#should i add an isValid column?
+				
 		return torch.from_numpy(tensor)
 		
 		
@@ -169,7 +178,7 @@ class ColorfightEnv(gym.Env):
 		g = self.game
 		cell = g.GetCell(x,y)
 		if(cell.owner == g.uid):#if we already own the cell
-			return np.finfo(np.float64).max#INSERT SOMETHING HERE
+			return np.finfo(np.float64).max
 
 		numNeighbors = 0
 		neighbors = (g.GetCell(x+1,y),g.GetCell(x,y+1),g.GetCell(x-1,y),g.GetCell(x,y-1))
@@ -185,7 +194,7 @@ class ColorfightEnv(gym.Env):
 		g = self.game
 		finish_time = cell.finishTime - g.currTime
 		if(finish_time < 0):
-			return np.finfo(np.float64).max #CHECK TO SEE IF THIS WORKS OUT OK
+			return np.finfo(np.float64).max 
 		return finish_time
 
 		

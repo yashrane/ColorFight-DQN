@@ -474,5 +474,20 @@ def valid(x,y):
 			return True
 	return False
 	
+#gets the state of the board
+def getState(g):
+	state = [[[0]*7]*g.height]*g.width	
+	for x in range(g.width):
+		for y in range(g.height):
+			c = g.GetCell(x,y)
+			state[x,y,0] = (int)(c.owner == g.uid) 						#isPlayer
+			state[x,y,1] = (int)(c.owner != g.uid and c.owner != 0)		#isEnemy
+			state[x,y,2] = (int)(c.cellType == 'gold')*9+1				#score
+			state[x,y,3] = calculateTimeToTake(g,x,y)					#takeTime
+			state[x,y,4] = cellsOwned(c)								#num cells owned by a the same player
+			state[x,y,5] = (int)(c.celltype == 'energy')				#isEnergy
+			state[x,y,6] = (int)(valid(x,y))							#is valid to attack
+	return state		
+
 	
 run()
