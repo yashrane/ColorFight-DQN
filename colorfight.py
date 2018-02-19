@@ -3,7 +3,7 @@ import json
 import os
 import random
 
-hostUrl   = 'https://colorfight-dqn.herokuapp.com/'
+hostUrl   = 'https://colorfight.herokuapp.com/'
 #hostUrl   = 'http://localhost:8000/'
 
 def CheckToken(token):
