@@ -155,6 +155,8 @@ def num_bases(g):
 	
 #returns true if you should use boost on the cell
 def shouldBoost(g,c):
+	if c.cellType == 'energy':
+		return True
 	if(g.energy <= 50):#if we're low on energy, then dont boost <- this cutoff should probably be adjusted
 		return False
 		
