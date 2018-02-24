@@ -34,14 +34,17 @@ for i in range(15):
 #get the map of weights based on the type of cells
 def get_map(g, type):
 	weight_setter = []
-	for i in range(0,4):
-		for j in range(0,4):
-			if(i+j < 4 and i+j != 0):
-				weight_setter.append((i,j,4-i-j))
-				weight_setter.append((-i,j,4-i-j))
-				weight_setter.append((i,-j,4-i-j))
-				weight_setter.append((-i,-j,4-i-j))
-	weight_setter.append((0,0,4))
+	for i in range(0,5):
+		for j in range(0,5):
+			if(i+j < 5 and i+j != 0):
+				weight_setter.append((i,j,5-i-j))
+				weight_setter.append((-i,j,5-i-j))
+				weight_setter.append((i,-j,5-i-j))
+				weight_setter.append((-i,-j,5-i-j))
+	if type == 'energy':
+		weight_setter.append((0,0,7))
+	else:
+		weight_setter.append((0,0,5))
 	map = []
 	for i in range(30):
 		map.append([])
@@ -85,13 +88,10 @@ def calcExpScore(g,x,y):
 
 	cell = g.GetCell(x,y)
 	time = calculateTimeToTake(g,x,y)
-	if cell.cellType == 'gold':
-		score = 10
-	else:
-		score = 1
+	score = 1
 	
-	score = score*location_importance[x][y]
-	score = score*(energy_map[x][y]+1)
+	score = score*location_importance[x][y]/3
+	score = score*(energy_map[x][y]+1)*2
 	if not haveGold:#only prioritizes gold if we have less than 3
 		score = score*(gold_map[x][y]+1)	
 	
@@ -112,34 +112,54 @@ def find_max(cells):
 	
 #Finds the best base location by summing the distances to non-user cells in cardinal directions
 def find_best_base_loc(g):
-	best = (-1, -1, -5)
+	best = (-1, -1, -999999)
 	for i in range(30):
 		for j in range(30):
 			if(g.GetCell(i,j).owner == g.uid):
-				x,y,count = i,j,-4
+				x,y,count = i,j,-1
 				cell = g.GetCell(x,y)
 				while(cell is not None and not cell.isBase and (cell.owner == g.uid or cell.owner == 0)):
 					count += 1
 					x -= 1
 					cell = g.GetCell(x,y)
+					if (abs(i-x) < 3):
+						if cell is None:
+							count += 5
+						elif cell.owner != g.uid and cell.owner != 0:
+							count -= 20
 				x,y = i,j
 				cell = g.GetCell(x,y)
 				while(cell is not None and not cell.isBase and (cell.owner == g.uid or cell.owner == 0)):
 					count += 1
 					x += 1
 					cell = g.GetCell(x,y)
+					if (abs(i-x) < 3):
+						if cell is None:
+							count += 5
+						elif cell.owner != g.uid and cell.owner != 0:
+							count -= 20
 				x,y = i,j
 				cell = g.GetCell(x,y)
 				while(cell is not None and not cell.isBase and (cell.owner == g.uid or cell.owner == 0)):
 					count += 1
 					y += 1
 					cell = g.GetCell(x,y)
+					if (abs(j-y) < 3):
+						if cell is None:
+							count += 5
+						elif cell.owner != g.uid and cell.owner != 0:
+							count -= 20
 				x,y = i,j
 				cell = g.GetCell(x,y)
 				while(cell is not None and not cell.isBase and (cell.owner == g.uid or cell.owner == 0)):
 					count += 1
 					y -= 1
 					cell = g.GetCell(x,y)
+					if (abs(j-y) < 3):
+						if cell is None:
+							count += 5
+						elif cell.owner != g.uid and cell.owner != 0:
+							count -= 20
 				if count > best[2]:
 					best = (i,j,count)
 	return best[0],best[1]
