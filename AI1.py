@@ -173,11 +173,23 @@ def num_bases(g):
 				n += 1
 	return n
 	
+	
+def nearEnergy(g,c):
+	if c.cellType == 'energy':
+		return True
+	for d in directions:
+		cell = g.GetCell(c.x + d[0], c.y+d[1])
+		if cell is not None and cell.cellType == 'energy':
+			return True
+	return False
+	
+	
 #returns true if you should use boost on the cell
 def shouldBoost(g,c):
-	if g.energy > 10 and c.cellType == 'energy':
+	if g.energy > 10 and nearEnergy(g,c):
 		print('Boosting!')
 		return True
+		
 	if(g.energy <= 50 or c.owner == 0):#if we're low on energy, then dont boost <- this cutoff should probably be adjusted
 		return False
 		
@@ -214,6 +226,8 @@ def decideDefenseBoom(g):
 		return False
 		
 	base = findBase(g)
+	if base is None:
+		return
 	num_enemies = numEnemyCellsAround(g,base)
 	
 	enemy_threshold = 6
@@ -241,7 +255,7 @@ if __name__ == '__main__':
 	# stop your AI and continue from the last time you quit. 
 	# If there's a token and the token is valid, JoinGame() will continue. If
 	# not, you will join as a new player.
-	if g.JoinGame('test1'):
+	if g.JoinGame('sendhelp'):
 		# Put you logic in a while True loop so it will run forever until you 
 		# manually stop the game
 		
