@@ -1,6 +1,7 @@
 import sys
 import csv
 import colorfight
+from colorfight import Game
 import random
 import queue
 import math
