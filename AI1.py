@@ -1,7 +1,22 @@
 # You need to import colorfight for all the APIs
+'''
+TODO:
+add weight for bases
+deprioritize energy if we have a lot of energy cells already
+priority for distance from base if we have 2 bases
+add base killing
+add using energy for base defense
+add usage of energy(but only if theres a good reason to/ we have a lot of energy cells)
+-calculate the energy cells needed for using energy to be a net gain, cells wise
+
+'''
+
+
 import colorfight
 import random
 import math
+
+haveGold = False
 directions = [(0,1), (0,-1), (1, 0), (-1,0)]
 surround = [(0,1), (0,-1), (1, 0), (-1,0), (1,1), (1,-1), (-1, 1), (-1,-1)]
 location_importance = []
@@ -15,6 +30,35 @@ for i in range(15):
 		location_importance[14-i][j+15] = location_importance[i+15][j+15]
 		location_importance[i+15][14-j] = location_importance[i+15][j+15]
 		location_importance[14-i][14-j] = location_importance[i+15][j+15]
+		
+#get the map of weights based on the type of cells
+def get_map(g, type):
+	weight_setter = []
+	for i in range(0,4):
+		for j in range(0,4):
+			if(i+j < 4 and i+j != 0):
+				weight_setter.append((i,j,4-i-j))
+				weight_setter.append((-i,j,4-i-j))
+				weight_setter.append((i,-j,4-i-j))
+				weight_setter.append((-i,-j,4-i-j))
+	weight_setter.append((0,0,4))
+	map = []
+	for i in range(30):
+		map.append([])
+		for j in range(30):
+			map[i].append(0)
+	for i in range(30):
+		for j in range(30):
+			if g.GetCell(i,j).cellType == type:
+				for thing in weight_setter:
+					if g.GetCell(i-thing[0],j-thing[1]) is not None:
+						map[i-thing[0]][j-thing[1]] += thing[2]
+	return map
+		
+energy_map = []
+gold_map = []
+		
+		
 
 def valid(g,x,y):
 	if g.GetCell(x,y).isTaking:
@@ -36,17 +80,26 @@ def calculateTimeToTake(g,x,y):
 	return cell.takeTime * (1 - 0.25*(numNeighbors - 1))
 
 def calcExpScore(g,x,y):
+	global energy_map
+	global gold_map
+
 	cell = g.GetCell(x,y)
 	time = calculateTimeToTake(g,x,y)
 	if cell.cellType == 'gold':
 		score = 10
 	else:
 		score = 1
+	
+	score = score*location_importance[x][y]
+	score = score*(energy_map[x][y]+1)
+	if not haveGold:#only prioritizes gold if we have less than 3
+		score = score*(gold_map[x][y]+1)	
+	
 	if cell.owner != 0:
 		owner = [user for user in g.users if user.id == cell.owner]
 		owner = owner[0]
-		score = score*location_importance[x][y]
 		score = score + score*owner.cellNum/900
+
 	E_score = score/(time**2)
 	return E_score
 
@@ -100,7 +153,20 @@ def num_bases(g):
 				n += 1
 	return n
 	
-	
+#returns true if you should use boost on the cell
+def shouldBoost(g,c):
+	if(g.energy <= 50):#if we're low on energy, then dont boost <- this cutoff should probably be adjusted
+		return False
+		
+	if g.energyCellNum > 1 and g.energy > 90: #if we're at max energy, then might as well use some
+		print('Boosting!')
+		return True
+		
+	#if the time we save is greater than the time it takes to regain the energy used
+	if(g.energyCellNum >2 and c.takeTime-1 > 20.0/(g.energyCellNum-2)):
+		print('Boosting!')
+		return True
+	return False
 	
 
 if __name__ == '__main__':
@@ -112,9 +178,13 @@ if __name__ == '__main__':
 	# stop your AI and continue from the last time you quit. 
 	# If there's a token and the token is valid, JoinGame() will continue. If
 	# not, you will join as a new player.
-	if g.JoinGame('sqedge1'):
+	if g.JoinGame('test1'):
 		# Put you logic in a while True loop so it will run forever until you 
 		# manually stop the game
+		
+		energy_map = get_map(g,'energy')
+		gold_map = get_map(g,'gold')
+		
 		while True:
 			valid_cells = []
 			# Use a nested for loop to iterate through the cells on the map
@@ -128,14 +198,20 @@ if __name__ == '__main__':
 						
 			#finds the best cell to build a base
 			if(num_bases(g) < 3):
-				if(g.cellNum > weights["base_theshold"]):
+				if(g.gold >= 60):
 					cellx,celly = find_best_base_loc(g)
 					g.BuildBase(cellx,celly)
 					g.Refresh()
-					
+			if(g.goldCellNum < 3):
+				haveGold = False
+			else:
+				haveGold = True
 			
 			max_score_cell = random.choice(find_max(valid_cells))
-			print(g.AttackCell(max_score_cell[0],max_score_cell[1]))
+			max_x = max_score_cell[0]
+			max_y = max_score_cell[1]
+			print(g.AttackCell(max_x,max_y, shouldBoost(g, g.GetCell(max_x, max_y))))
+#			print(str(1000*(energy_map[max_score_cell[0]][max_score_cell[1]]+ 1)) + " " + str(max_score_cell[2]))
 			g.Refresh()
 						
 	else:
