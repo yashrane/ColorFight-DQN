@@ -31,9 +31,9 @@ if(g.JoinGame('cheat')):
 	atk_options = [
 		("Normal", 1),
 		("Boost(10)", 2),
-		("Bomb Center(40)", 3),
-		("Bomb Vert(40)", 4),
-		("Bomb Horiz(40)", 5),
+		("Bomb Center(30)", 3),
+		("Bomb Vert(30)", 4),
+		("Bomb Horiz(30)", 5),
 		("Build Base(60g)", 6)
 	]
 	root.geometry("1200x900")
