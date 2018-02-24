@@ -155,9 +155,10 @@ def num_bases(g):
 	
 #returns true if you should use boost on the cell
 def shouldBoost(g,c):
-	if c.cellType == 'energy':
+	if g.energy > 10 and c.cellType == 'energy':
+		print('Boosting!')
 		return True
-	if(g.energy <= 50):#if we're low on energy, then dont boost <- this cutoff should probably be adjusted
+	if(g.energy <= 50 or c.owner == 0):#if we're low on energy, then dont boost <- this cutoff should probably be adjusted
 		return False
 		
 	if g.energyCellNum > 1 and g.energy > 90: #if we're at max energy, then might as well use some
@@ -170,7 +171,47 @@ def shouldBoost(g,c):
 		return True
 	return False
 	
-
+#returns the first player base that it finds
+def findBase(g):
+	for x in range(30):
+		for y in range(30):
+			c = g.GetCell(x,y)
+			if(c.isBase and c.owner == g.uid):
+				return c
+#returns the number of enemy cells or edges around a cell
+def numEnemyCellsAround(g,c):
+	num_enemies = 0
+	directions = [(0,1),(0,-1),(1,0),(-1,0),(1,1),(1,-1),(-1,1),(-1,-1)]
+	for d in directions:
+		c = g.GetCell(c.x + d[0], c.y + d[1]) 
+		if c is not None and c.owner != g.uid and c.owner!= 0:
+			num_enemies = num_enemies + 1
+	return num_enemies
+	
+#decides whether to use a boom defensively or not
+def decideDefenseBoom(g):
+	if(g.baseNum > 1 or g.energy < 40):
+		return False
+		
+	base = findBase(g)
+	num_enemies = numEnemyCellsAround(g,base)
+	
+	enemy_threshold = 6
+	if(base.x == 0 or base.x == 29) and (base.y == 0 or base.y == 29):#its on a corner
+		enemy_threshold = 2
+	elif base.x == 0 or base.x == 29 or base.y == 0 or base.y == 29:#its on an edge
+		enemy_threshold = 4
+		
+	if num_enemies > enemy_threshold:
+		print('Booming around a base!')
+		g.Blast(base.x, base.y, 'square', 'attack')
+	
+		
+	
+	
+	
+	
+	
 if __name__ == '__main__':
 	# Instantiate a Game object.
 	g = colorfight.Game()
@@ -188,6 +229,8 @@ if __name__ == '__main__':
 		gold_map = get_map(g,'gold')
 		
 		while True:
+			decideDefenseBoom(g)
+		
 			valid_cells = []
 			# Use a nested for loop to iterate through the cells on the map
 			for x in range(g.width):
