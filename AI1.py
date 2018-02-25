@@ -187,9 +187,13 @@ def nearEnergy(g,c):
 	return False
 	
 	
+#Returns the time left until the game ends
+def timeLeft(g):
+	return g.endTime - g.currTime
+	
 #returns true if you should use boost on the cell
 def shouldBoost(g,c):
-	if g.energy > 10 and nearEnergy(g,c):
+	if g.energy > 10 and (nearEnergy(g,c) or timeLeft(g) < 60):
 		print('Boosting!')
 		return True
 		
@@ -258,7 +262,7 @@ if __name__ == '__main__':
 	# stop your AI and continue from the last time you quit. 
 	# If there's a token and the token is valid, JoinGame() will continue. If
 	# not, you will join as a new player.
-	if g.JoinGame('sendhelp'):
+	if g.JoinGame('sendmorehelp'):
 		# Put you logic in a while True loop so it will run forever until you 
 		# manually stop the game
 		
