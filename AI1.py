@@ -100,6 +100,9 @@ def calcExpScore(g,x,y):
 		owner = owner[0]
 		score = score + score*owner.cellNum/900
 
+	if nearEnergy(g, cell):
+		score = score*1.5
+	
 	E_score = score/(time**2)
 	return E_score
 
@@ -215,8 +218,8 @@ def numEnemyCellsAround(g,c):
 	num_enemies = 0
 	directions = [(0,1),(0,-1),(1,0),(-1,0),(1,1),(1,-1),(-1,1),(-1,-1)]
 	for d in directions:
-		c = g.GetCell(c.x + d[0], c.y + d[1]) 
-		if c is not None and c.owner != g.uid and c.owner!= 0:
+		cell = g.GetCell(c.x + d[0], c.y + d[1]) 
+		if cell is not None and cell.owner != g.uid and cell.owner!= 0:
 			num_enemies = num_enemies + 1
 	return num_enemies
 	
