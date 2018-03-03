@@ -106,7 +106,7 @@ def calcExpScore(g,x,y, base):
 	
 	#priorizing cells near base if there is only one base
 	if base is not None:
-		distance_to_base = 3 - distance(x,y,base.x, base,y)
+		distance_to_base = 3 - distance(x,y,base.x, base.y)
 		if distance_to_base > 0:
 			score = score*distance_to_base
 		
@@ -277,7 +277,7 @@ if __name__ == '__main__':
 	# stop your AI and continue from the last time you quit. 
 	# If there's a token and the token is valid, JoinGame() will continue. If
 	# not, you will join as a new player.
-	if g.JoinGame('sendmorehelp'):
+	if g.JoinGame('Creative Nickname'):
 		# Put you logic in a while True loop so it will run forever until you 
 		# manually stop the game
 		
