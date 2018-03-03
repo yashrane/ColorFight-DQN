@@ -82,10 +82,11 @@ def calculateTimeToTake(g,x,y):
 
 	return cell.takeTime * (1 - 0.25*(numNeighbors - 1))
 
-def calcExpScore(g,x,y):
+def calcExpScore(g,x,y, base):
 	global energy_map
-	global gold_map
-
+	global gold_map	
+	
+	
 	cell = g.GetCell(x,y)
 	time = calculateTimeToTake(g,x,y)
 	score = 1
@@ -103,6 +104,14 @@ def calcExpScore(g,x,y):
 	if nearEnergy(g, cell):
 		score = score*1.5
 	
+	#priorizing cells near base if there is only one base
+	if base is not None:
+		distance_to_base = 3 - distance(x,y,base.x, base,y)
+		if distance_to_base > 0:
+			score = score*distance_to_base
+		
+	
+	
 	E_score = score/(time**2)
 	return E_score
 
@@ -112,6 +121,12 @@ def find_max(cells):
 		if cell[2] > m[2]:
 			m = cell
 	return [cell for cell in cells if cell[2] == m[2]]
+	
+#Calculates the distance from one point to another
+def distance(x1, y1, x2, y2):
+	return round(math.sqrt((x1-x2)**2 + (y1-y2)**2))
+	
+	
 	
 #Finds the best base location by summing the distances to non-user cells in cardinal directions
 def find_best_base_loc(g):
@@ -272,6 +287,11 @@ if __name__ == '__main__':
 		while True:
 			decideDefenseBoom(g)
 		
+			base=None
+			if g.baseNum == 1:
+				base = findBase(g)
+		
+		
 			valid_cells = []
 			# Use a nested for loop to iterate through the cells on the map
 			for x in range(g.width):
@@ -280,7 +300,7 @@ if __name__ == '__main__':
 					c = g.GetCell(x,y)
 					# If the cell I got is mine
 					if c.owner != g.uid and valid(g,x,y):
-						valid_cells.append((x,y,calcExpScore(g,x,y)))
+						valid_cells.append((x,y,calcExpScore(g,x,y, base)))
 						
 			#finds the best cell to build a base
 			if(num_bases(g) < 3):
