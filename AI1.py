@@ -208,7 +208,7 @@ def timeLeft(g):
 	
 #returns true if you should use boost on the cell
 def shouldBoost(g,c):
-	if g.energy > 10 and (nearEnergy(g,c) or timeLeft(g) < 60):
+	if g.energy > 10 and (nearEnergy(g,c) or timeLeft(g) < 60) and c.owner != 0:
 		print('Boosting!')
 		return True
 		
