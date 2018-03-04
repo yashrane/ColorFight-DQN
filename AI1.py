@@ -106,7 +106,7 @@ def calcExpScore(g,x,y, base):
 	
 	#priorizing cells near base if there is only one base
 	if base is not None:
-		distance_to_base = 3 - distance(x,y,base.x, base,y)
+		distance_to_base = 3 - distance(x,y,base.x, base.y)
 		if distance_to_base > 0:
 			score = score*distance_to_base
 		
